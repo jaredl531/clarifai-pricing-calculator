@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="icon" href="https://i.imgur.com/hgWqKCT.png" type="image/png">
+  <title>Clarifai Pricing Calculator!</title>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="https://sdk.clarifai.com/js/clarifai-latest.js"></script>
+  <script type="text/javascript" src="helper-functions.js"></script>
+  <script>
+  window.onload = function() {
+  	// dynamically update costs every 5 milliseconds
+  	setInterval(updateCosts, 500);
+  }
+  </script>
+  
+  <style type="text/css">
+    body { margin-left:20px; margin-top:20px; margin-bottom:30px; font-family: sans-serif; height:100%}
+
+		/* Checkboxes */
+		input[type='checkbox'] {
+		  -webkit-appearance:none;
+		  width:25px;
+		  height:25px;
+		  background:white;
+		  border-radius:5px;
+		  border:2px solid #555;
+		  vertical-align: middle;
+  		position: relative;
+  		bottom: 1px;
+		}
+		
+		input[type='checkbox']:checked {
+		  background: #377fc6;
+		}
+		
+		input[type="checkbox"]:focus{
+      outline:0;
+    }
+    
+    
+    /* Input boxes */
+    input[type="text"] {
+  		display: block;
+  		margin: 0;
+  		/*width: 100%;*/
+  		font-family: sans-serif;
+  		font-size: 18px;
+  		appearance: none;
+  		box-shadow: none;
+  		border-radius: none;
+		}
+		input[type="text"]:focus {
+  		outline: none;
+		}
+		
+		.style-1 input[type="text"] {
+		  padding: 10px;
+		  border: solid 1px #dcdcdc;
+		  transition: box-shadow 0.3s, border 0.3s;
+		}
+		.style-1 input[type="text"]:focus,
+		.style-1 input[type="text"].focus {
+		  border: solid 1px #707070;
+		  box-shadow: 0 0 5px 1px #969696;
+		}
+    
+    ul {
+    	padding-left:0;
+    	list-style-type: none;
+    	display:inline;
+    }
+    
+    li {
+  	}
+    
+    .userEntries {
+    	margin-top:60px; 
+    	margin-right:75px; 
+    	display:none; 
+    	float:left; 
+    	font-size:20px;
+    }
+    
+    table#PublicPredictFields td, table#CustomTrainingFields td, table#VisualSearchFields td {
+    	min-width:350px;
+    }
+    
+    td {
+    	padding:5px;
+    	text-align:right;
+    }
+    
+    tr {
+    }
+    
+    .footer {
+    	position:absolute;
+    	bottom: 0;
+    	left: 0;
+    	margin-bottom:100px;
+    	width:100%;
+    }
+    
+  </style>
+</head>
+<body>
+  <div id="Title" style="font-size:52px; font-face:Arial; margin-top:40px; margin-left:30px" align="left"><img src="logo.png" id="logo"/>&nbsp;Pricing Calculator!</div>
+  
+  <div id="MainDiv" style="margin-left:50px; margin-right:200px">
+  
+  	<div id="Model_Title" style="font-size:28px; margin-bottom:5px; margin-top:35px; float:left">I need to:<br/><br/>
+  		<form action="" style="font-size:18px; margin-bottom:20px; margin-right:30px; line-height:200%">
+    		<input type="checkbox" id="PublicPredict" name="PublicPredict" value="PublicPredict" onClick="ShowHideDiv('PublicPredictFields', this)"> Make predictions using Clarifai's existing models</input><br/>
+    		<input type="checkbox" id="CustomTraining" name="CustomTraining" value="customTraining" onClick="ShowHideDiv('CustomTrainingFields', this)"> Make my own custom model</input><br/>
+    		<input type="checkbox" id="VisualSearch" name="VisualSearch" value="visualSearch" onClick="ShowHideDiv('VisualSearchFields', this)"> Do visual similarity searches</input><br/>
+  		</form>
+  	</div>
+  	
+  	<div id="CostDiv" style="float:right; width:800px; margin-right:-300px; position:fixed; top:15%; right:20%; scroll:auto">
+  	  <table id="CostTable" style="margin-bottom:50px">
+  			<tr>
+  				<td style="font-size:38px;">One-Time Upload Costs: </td>
+  				<td id="OneTimeCostTotal" style="font-size:38px; width:200px">$0.00</td>
+  			</tr>
+  			<tr>
+  				<td><span id="TotalImageFreeUploads">0</span> Image Uploads on Free Tier</td>
+  			</tr>
+  			<tr>
+  				<td><span id="TotalImagePaidUploads">0</span> Image Uploads x $0.0012</td>
+  			</tr>
+  			<tr style="height:50px"></tr>
+  			<tr>
+  				<td style="font-size:38px; width:500px" align="right">Monthly Costs: </th>
+  				<td id="MonthlyCostTotal" style="font-size:38px; width:200px">$0.00</td>
+  			</tr>
+  			<tr>
+  				<td><span id="MonthlyOperationsFreeSmall">0</span> Operations on Free Tier</td>
+  			</tr>
+  			<tr>
+  				<td><span id="MonthlyConceptsFreeSmall">0</span> Custom Concepts on Free Tier</td>
+  			</tr>
+  		  <tr>
+  				<td><span id="MonthlyImagesFreeSmall">0</span> Images Stored on Free Tier</td>
+  			</tr>
+  			<tr style="height:25px"></tr>
+  			<tr>
+  				<td><span id="MonthlyPredictPaidSmall">0</span> Public Predictions x $0.0012</td>
+  			</tr>
+  			<tr>
+  				<td><span id="MonthlyCustomPredictPaidSmall">0</span> Custom Predictions x $0.0032</td>
+  			</tr>
+  			<tr>
+  				<td><span id="MonthlyConceptsPaidSmall">0</span> Custom Concepts x $0.46</td>
+  			</tr>
+  			<tr>
+  				<td><span id="MonthlySearchPaidSmall">0</span> Searches x $0.0012</td>
+  			</tr>
+  			<tr>
+  				<td><span id="MonthlyImagesPaidSmall">0</span> Images Stored x $0.0008</td>
+  			</tr>
+  			<tr style="height:75px"></tr>
+  		</table>
+		</div>
+		
+		
+  	<div id="HiddenFields" style="width:100%; float:left; margin-bottom:50px">
+  	
+  	  <!-- PUBLIC PREDICTS -->
+  	  
+  		<table id="PublicPredictFields" class="userEntries" align="left">
+  			<tr>
+  				 <th style="font-size:28px; text-align:left">Public Models</th>
+  			</tr>
+  			<tr>
+  				<td>Predictions needed per month: </td>
+  				<td style="max-width:100px">
+  					<ul class="input-list style-1 clearfix">
+    					<li>
+      					<input id="monthlyPublicCalls" type="text" placeholder="" class="focus" size="20" onInput="this.value = formatWithCommas(this.value)" onKeyPress="return event.charCode >= 48 && event.charCode <= 57"/>
+    					</li>
+  					</ul>
+  				</td>
+  			</tr>
+  		</div>
+  	
+  	
+  		<!-- CUSTOM TRAINING -->
+  		
+  		<table id="CustomTrainingFields" class="userEntries" align="left">
+  			<tr>
+  				<th style="font-size:28px; text-align:left">Custom Models</th>
+  			</tr>
+  			<tr>
+  				<td>Predictions needed per month: </td>
+  				<td>
+  					<ul class="input-list style-1 clearfix">
+   						<li>
+   	  					<input id="monthlyCustomCalls" type="text" placeholder="" class="focus" size="20" onInput="this.value = formatWithCommas(this.value)" onKeyPress="return event.charCode >= 48 && event.charCode <= 57"/>
+   						</li>
+  					</ul>
+  				</td>
+  			</tr>
+  			<tr>
+  				<td>Number of custom concepts: </td>
+  				<td>
+  					<ul class="input-list style-1 clearfix">
+   						<li>
+   	  					<input id="monthlyCustomConcepts" type="text" placeholder="" class="focus" size="7" onInput="this.value = formatWithCommas(this.value)" onKeyPress="return event.charCode >= 48 && event.charCode <= 57"/>
+   						</li>
+  					</ul>
+  				</td>
+  			</tr>
+  			<tr>
+  				<td>Number of images used for training:</td>
+  				<td>
+  					<ul class="input-list style-1 clearfix">
+   						<li>
+   	  					<input id="monthlyCustomImages" type="text" placeholder="" class="focus" size="20" onInput="this.value = formatWithCommas(this.value)" onKeyPress="return event.charCode >= 48 && event.charCode <= 57"/>
+   						</li>
+  					</ul>
+  				</td>
+  			</tr>
+  			</table>
+  			
+  			
+  			<!-- VISUAL SEARCH -->
+  			
+  			<table id="VisualSearchFields" class="userEntries" align="left">
+  			<tr>
+  				<th style="font-size:28px; text-align:left">Visual Search</th>
+  			</tr>
+  			<tr>
+  				<td>Searches needed per month: </td>
+  				<td>
+  					<ul class="input-list style-1 clearfix">
+   						<li>
+   	  					<input id="monthlySearchCalls" type="text" placeholder="" class="focus" size="20" onInput="this.value = formatWithCommas(this.value)" onKeyPress="return event.charCode >= 48 && event.charCode <= 57"/>
+   						</li>
+  					</ul>
+  				</td>
+  			</tr>
+  			<tr>
+  				<td>Number of images used in application:</td>
+  				<td>
+  					<ul class="input-list style-1 clearfix">
+   						<li>
+   	  					<input id="monthlySearchImages" type="text" placeholder="" class="focus" size="20" onInput="this.value = formatWithCommas(this.value)" onKeyPress="return event.charCode >= 48 && event.charCode <= 57"/>
+   						</li>
+  					</ul>
+  				</td>
+  			</tr>
+  			</table>
+
+  	</div> <!-- End of HiddenFields -->
+  	
+  </div> <!-- End of MainDiv -->
+  
+</body>
+</html>
